@@ -8,12 +8,27 @@ class Zoombini(_nt("Zoombini", ("feet", "nose", "eyes", "hair"))):
     __slots__ = ()
 
     @staticmethod
-    def pick():
+    def _pick():
         return _rand(_c.Z_CHOICES_PER_FEATURE)
+
+    @staticmethod
+    def is_valid(party):
+        if len(party) != _c.Z_PARTY_SIZE:
+            return False  # Invalid party size
+
+        unique = set(party)
+        if len(unique) >= (_c.Z_PARTY_SIZE - (_c.Z_COMMON_IN_PARTY - 1)):
+            return True  # Impossible for there to be too many common in party
+
+        for z in unique:
+            if party.count(z) > _c.Z_COMMON_IN_PARTY:
+                return False  # Too many of a common in party
+
+        return True  # Valid party
 
     @classmethod
     def random(cls):
-        return cls(cls.pick(), cls.pick(), cls.pick(), cls.pick())
+        return cls(cls._pick(), cls._pick(), cls._pick(), cls._pick())
 
     @classmethod
     def _some(cls, amount):
@@ -24,7 +39,9 @@ class Zoombini(_nt("Zoombini", ("feet", "nose", "eyes", "hair"))):
         party = sorted(cls._some(_c.Z_PARTY_SIZE))
         unique = sorted(set(party))
         redo = True
-        while len(unique) <= (14) and redo:  # TODO refactor this number to be derived from constants
+        # Calculate the minimum length that `unique` can be
+        # that it always means that the party is valid
+        while len(unique) < (_c.Z_PARTY_SIZE - (_c.Z_COMMON_IN_PARTY - 1)) and redo:
             redo = False
             pos = 0
             for z in unique:
